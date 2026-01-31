@@ -1,88 +1,41 @@
-const express = require("express");
-const app = express();
+app.post("/generate-listing", async (req, res) => {
+  try {
+    const { product } = req.body;
 
-const PORT = process.env.PORT || 10000;
+    const prompt = `
+Create an Amazon-style product listing for: ${product}
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+Return ONLY in JSON format like this:
+{
+  "title": "...",
+  "bullets": ["...", "...", "...", "...", "..."],
+  "description": "..."
+}
+`;
 
-// HOME PAGE (simple UI)
-app.get("/", (req, res) => {
-  res.send(`
-  <!DOCTYPE html>
-  <html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>Market Genius AI</title>
-    <style>
-      body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 16px; }
-      input { width: 100%; padding: 12px; font-size: 16px; margin: 10px 0; }
-      button { padding: 12px 16px; font-size: 16px; cursor: pointer; }
-      pre { background: #f5f5f5; padding: 16px; border-radius: 8px; white-space: pre-wrap; }
-    </style>
-  </head>
-  <body>
-    <h2>Market Genius AI — Listing Generator</h2>
-    <p>Type a product name and click Generate.</p>
-    <input id="product" placeholder="e.g. Wireless Bluetooth Headphones" />
-    <button onclick="generate()">Generate</button>
-    <h3>Result:</h3>
-    <pre id="output">Waiting...</pre>
+    const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: process.env.OPENAI_MODEL,
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7
+      })
+    });
 
-    <script>
-      async function generate() {
-        const product = document.getElementById("product").value.trim();
-        if (!product) {
-          alert("Please enter a product name");
-          return;
-        }
+    const data = await openaiResponse.json();
 
-        document.getElementById("output").textContent = "Generating...";
+    const aiText = data.choices[0].message.content;
 
-        try {
-          const res = await fetch("/generate-listing", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ product })
-          });
+    const parsed = JSON.parse(aiText);
 
-          const data = await res.json();
-          document.getElementById("output").textContent = JSON.stringify(data, null, 2);
-        } catch (err) {
-          document.getElementById("output").textContent = "Error: " + err.message;
-        }
-      }
-    </script>
-  </body>
-  </html>
-  `);
-});
+    res.json(parsed);
 
-// API ENDPOINT
-app.post("/generate-listing", (req, res) => {
-  const { product } = req.body;
-
-  if (!product) {
-    return res.status(400).json({ error: "No product provided" });
+  } catch (error) {
+    console.error("AI ERROR:", error);
+    res.status(500).json({ error: "AI generation failed" });
   }
-
-  // Mock AI output for now (we’ll connect OpenAI later)
-  const response = {
-    title: `Best ${product} for 2026 - Premium Quality`,
-    bullets: [
-      `Top-rated ${product} with advanced features`,
-      "Fast shipping and trusted quality",
-      "Perfect for everyday use",
-      "High customer satisfaction",
-      "Limited stock available"
-    ],
-    description: `This ${product} is designed for modern customers in 2026. Built with premium materials and tested for durability, it delivers excellent value and long-lasting quality.`
-  };
-
-  return res.json(response);
-});
-
-// START SERVER
-app.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
 });
