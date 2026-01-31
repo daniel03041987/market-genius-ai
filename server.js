@@ -5,12 +5,16 @@ const PORT = process.env.PORT || 10000;
 
 app.use(express.json());
 
-// Test route
+/* ===============================
+   TEST ROUTE
+================================ */
 app.get("/", (req, res) => {
   res.send("Market Genius AI is LIVE 🚀");
 });
 
-// AI Listing Generator Endpoint
+/* ===============================
+   AI LISTING GENERATOR ENDPOINT
+================================ */
 app.post("/generate-listing", (req, res) => {
   const { product } = req.body;
 
@@ -27,10 +31,13 @@ app.post("/generate-listing", (req, res) => {
       "High customer satisfaction",
       "Limited stock available"
     ],
-    description: This ${product} is designed for performance, durability, and customer satisfaction. Ideal for modern buyers in 2026.
+    description: This ${product} is designed for modern customers in 2026 who want performance, style, and reliability in one product. Built with premium materials and tested for durability, it delivers excellent value and long-lasting quality.
   });
 });
 
+/* ===============================
+   START SERVER
+================================ */
 app.listen(PORT, () => {
   console.log(Server running on port ${PORT});
 });
