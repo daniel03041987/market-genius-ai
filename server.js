@@ -1,9 +1,9 @@
-const express = require("express");
+import express from "express";
 
 const app = express();
-app.use(express.json());
-
 const PORT = process.env.PORT || 10000;
+
+app.use(express.json());
 
 // Test route
 app.get("/", (req, res) => {
@@ -12,24 +12,25 @@ app.get("/", (req, res) => {
 
 // AI Listing Generator Endpoint
 app.post("/generate-listing", (req, res) => {
-  const product = req.body?.product;
+  const { product } = req.body;
 
   if (!product) {
     return res.status(400).json({ error: "No product provided" });
   }
 
   res.json({
-    title: `Best ${product} for 2026 – Premium Quality`,
+    title: Best ${product} for 2026 – Premium Quality,
     bullets: [
-      `High quality ${product}`,
-      "Fast shipping",
-      "Top rated product",
-      "Great value for money"
+      Top-rated ${product} with advanced features,
+      "Fast shipping and trusted quality",
+      "Perfect for everyday use",
+      "High customer satisfaction",
+      "Limited stock available"
     ],
-    description: `This ${product} is designed for performance, durability, and customer satisfaction. Perfect for everyday use.`
+    description: This ${product} is designed for performance, durability, and customer satisfaction. Ideal for modern buyers in 2026.
   });
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(Server running on port ${PORT});
 });
